@@ -51,6 +51,10 @@ namespace DuckGame {
         public static void MakeNetLog() {
         }
 
+        [MonoModLinkTo("DuckGame.ModLoader", "System.Void set_modHash(System.String)")]
+        private static void _ModLoader_set_modHash(string value) {
+        }
+
         public static extern void orig_Main(string[] args);
         [STAThread]
         public static void Main(string[] args) {
@@ -79,7 +83,21 @@ namespace DuckGame {
 
             argl.Add(">");
 
-            orig_Main(argl.ToArray());
+            args = argl.ToArray();
+
+            // Parse arguments again...
+            argq = new Queue<string>(args);
+            while (argq.Count > 0) {
+                string arg = argq.Dequeue();
+                if (arg == "-nomods")
+                    // MonoMain.moddingEnabled = false skips ManagedContent.InitializeMods.
+                    // InitializeMods calls ModLoader.LoadMods.
+                    // LoadMods sets ModLoader.modHash.
+                    // -nomods thus leaves ModLoader.modHash == null, which causes issues.
+                    _ModLoader_set_modHash("nomods"); // ModLoader.modHash = "nomods"
+            }
+
+            orig_Main(args);
         }
 
     }

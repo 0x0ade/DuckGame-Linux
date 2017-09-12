@@ -5,7 +5,8 @@
 
 ### Usage instructions:
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
-* Install `mono-complete` via your package manager.
+* Install `mono-complete` and `libcurl3:i386` (or matching) via your package manager.
+* Copy or symlink the i386 `libcurl.so.3` into `DuckGameDir/libcurl.so` because the Steam Runtime is somehow missing this...
 * Download [the latest released DuckGame-Linux-Complete.zip](https://github.com/0x0ade/DuckGame-Linux/releases)
 * Create a copy of the Duck Game directory... in the Duck Game directory and call it `orig`. XnaToFna will use that as a "backup" directory.
 * Put the contents of `USEME` next to the rest of Duck Game. `XnaToFna.exe` and `DuckGame.exe` should be next to each other.
