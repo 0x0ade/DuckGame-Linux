@@ -4,6 +4,12 @@ using Steamworks;
 
 public class Steam : IDisposable {
 
+    private static Dictionary<Type, object> _callResults = new Dictionary<Type, object>();
+
+    private static CallResult<T> GetCallResult<T>() => (CallResult<T>) _callResults[typeof(T)];
+    private static void SetCallResult<T>(CallResult<T>.APIDispatchDelegate func) => _callResults.Add(typeof(T), new CallResult<T>(func));
+    private static void SetCallResult<T>(SteamAPICall_t call) => ((CallResult<T>) _callResults[typeof(T)]).Set(call);
+
     private static bool _initialized;
     private static bool _offline;
 
@@ -16,8 +22,6 @@ public class Steam : IDisposable {
     private readonly static int kPacketBufferSize = 2048; // originally not readonly; could be const because it's inlined
 
     private unsafe static byte[] _packetData;
-
-    private static List<ulong> _currentUGCQueries = new List<ulong>(); // added because it's required to differentiate between Steam.cs and WorkshopQuery*.cs
 
     public delegate void ConnectionRequestedDelegate(User remote);
     public static event ConnectionRequestedDelegate ConnectionRequested;
@@ -76,14 +80,14 @@ public class Steam : IDisposable {
         Callback<DownloadItemResult_t>.Create(OnDownloadItemResult);
         Callback<UserStatsReceived_t>.Create(OnRequestStats);
 
-        // Manually added callbacks which otherwise would be added, then removed behind the scenes:
-        Callback<GlobalStatsReceived_t>.Create(OnRequestGlobalStats);
-        Callback<CreateItemResult_t>.Create(OnCreateItem);
-        Callback<SubmitItemUpdateResult_t>.Create(OnSubmitItemUpdate);
-        Callback<SteamUGCQueryCompleted_t>.Create(OnSendQueryUGCRequest);
-        Callback<LobbyCreated_t>.Create(OnCreateLobby);
-        Callback<LobbyEnter_t>.Create(OnJoinLobby);
-        Callback<LobbyMatchList_t>.Create(OnSearchForLobby);
+        // Manually added CallResults which otherwise would be added, then removed behind the scenes:
+        SetCallResult<GlobalStatsReceived_t>(OnRequestGlobalStats);
+        SetCallResult<CreateItemResult_t>(OnCreateItem);
+        SetCallResult<SubmitItemUpdateResult_t>(OnSubmitItemUpdate);
+        SetCallResult<SteamUGCQueryCompleted_t>(OnSendQueryUGCRequest);
+        SetCallResult<LobbyCreated_t>(OnCreateLobby);
+        SetCallResult<LobbyEnter_t>(OnJoinLobby);
+        SetCallResult<LobbyMatchList_t>(OnSearchForLobby);
 
         _packetData = new byte[kPacketBufferSize];
 
@@ -162,7 +166,7 @@ public class Steam : IDisposable {
         if (!_initialized)
             return;
         waitingForGlobalStats = true;
-        SteamUserStats.RequestGlobalStats(1); // FIXME: How many days for RequestGlobalStats?
+        SetCallResult<GlobalStatsReceived_t>(SteamUserStats.RequestGlobalStats(1)); // FIXME: How many days for RequestGlobalStats?
     }
 
     public unsafe static double GetGlobalStat(string id) {
@@ -185,7 +189,9 @@ public class Steam : IDisposable {
     public static WorkshopItem CreateItem() {
         if (!_initialized)
             return null;
-        return _pendingItem = new WorkshopItem();
+        _pendingItem = new WorkshopItem();
+        SetCallResult<CreateItemResult_t>(SteamUGC.CreateItem(SteamUtils.GetAppID(), EWorkshopFileType.k_EWorkshopFileTypeFirst));
+        return _pendingItem;
     }
 
     public unsafe static void ShowWorkshopLegalAgreement(string id) {
@@ -197,7 +203,7 @@ public class Steam : IDisposable {
         if (!_initialized)
             return;
         _pendingItem = item;
-        SteamUGC.SubmitItemUpdate(new UGCUpdateHandle_t(item.updateHandle), item.data.changeNotes);
+        SetCallResult<SubmitItemUpdateResult_t>(SteamUGC.SubmitItemUpdate(new UGCUpdateHandle_t(item.updateHandle), item.data.changeNotes));
     }
 
     public unsafe static List<WorkshopItem> GetAllWorkshopItems() {
@@ -222,8 +228,7 @@ public class Steam : IDisposable {
         if (!_initialized)
             return;
         UGCQueryHandle_t query = SteamUGC.CreateQueryUGCDetailsRequest(_.GetArray(items, item => new PublishedFileId_t(item.id)), (uint) items.Count);
-        _currentUGCQueries.Add(query.m_UGCQueryHandle);
-        SteamUGC.SendQueryUGCRequest(query);
+        SetCallResult<SteamUGCQueryCompleted_t>(SteamUGC.SendQueryUGCRequest(query));
     }
 
     public unsafe static void WorkshopUnsubscribe(ulong id) {
@@ -311,7 +316,7 @@ public class Steam : IDisposable {
         if (lobby != null)
             LeaveLobby(lobby);
         lobby = new Lobby(lobbyType, maxMembers);
-        SteamMatchmaking.CreateLobby((ELobbyType) lobbyType, maxMembers);
+        SetCallResult<LobbyCreated_t>(SteamMatchmaking.CreateLobby((ELobbyType) lobbyType, maxMembers));
         return lobby;
     }
 
@@ -323,7 +328,7 @@ public class Steam : IDisposable {
                 LeaveLobby(lobby);
             lobby = new Lobby(lobbyID);
         }
-        SteamMatchmaking.JoinLobby(new CSteamID(lobbyID));
+        SetCallResult<LobbyEnter_t>(SteamMatchmaking.JoinLobby(new CSteamID(lobbyID)));
         return lobby;
     }
 
@@ -355,7 +360,7 @@ public class Steam : IDisposable {
         lobbySearchComplete = false;
         lobbiesFound = 0;
         SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
-        SteamMatchmaking.RequestLobbyList();
+        SetCallResult<LobbyMatchList_t>(SteamMatchmaking.RequestLobbyList());
     }
 
     public unsafe static int GetNumLobbyMembers(Lobby which) {
@@ -473,7 +478,7 @@ public class Steam : IDisposable {
     public static void LogException(string message, string error) {
     }
 
-    private unsafe static void OnCreateLobby(LobbyCreated_t result) {
+    private unsafe static void OnCreateLobby(LobbyCreated_t result, bool ioFailure) {
         if (!_initialized)
             return;
         if (lobby == null)
@@ -484,13 +489,13 @@ public class Steam : IDisposable {
             lobby.OnProcessingComplete(0, SteamLobbyJoinResult.Error);
     }
 
-    private unsafe static void OnJoinLobby(LobbyEnter_t result) {
+    private unsafe static void OnJoinLobby(LobbyEnter_t result, bool ioFailure) {
         if (!_initialized)
             return;
         lobby?.OnProcessingComplete(result.m_ulSteamIDLobby, (SteamLobbyJoinResult) result.m_rgfChatPermissions);
     }
 
-    private unsafe static void OnSearchForLobby(LobbyMatchList_t result) {
+    private unsafe static void OnSearchForLobby(LobbyMatchList_t result, bool ioFailure) {
         if (!_initialized)
             return;
         if (result.m_nLobbiesMatching != 0) {
@@ -504,29 +509,27 @@ public class Steam : IDisposable {
         LobbySearchComplete?.Invoke(lobbySearchResult);
     }
 
-    private unsafe static void OnRequestGlobalStats(GlobalStatsReceived_t result) {
+    private unsafe static void OnRequestGlobalStats(GlobalStatsReceived_t result, bool ioFailure) {
         if (!_initialized)
             return;
         waitingForGlobalStats = false;
     }
 
-    private unsafe static void OnCreateItem(CreateItemResult_t result) {
+    private unsafe static void OnCreateItem(CreateItemResult_t result, bool ioFailure) {
         if (!_initialized)
             return;
         _pendingItem?.ApplyResult((SteamResult) result.m_eResult, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId.m_PublishedFileId);
     }
 
-    private unsafe static void OnSubmitItemUpdate(SubmitItemUpdateResult_t result) {
+    private unsafe static void OnSubmitItemUpdate(SubmitItemUpdateResult_t result, bool ioFailure) {
         if (!_initialized)
             return;
         _pendingItem?.ApplyResult((SteamResult) result.m_eResult, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, _pendingItem.id);
     }
 
-    private unsafe static void OnSendQueryUGCRequest(SteamUGCQueryCompleted_t result) {
+    private unsafe static void OnSendQueryUGCRequest(SteamUGCQueryCompleted_t result, bool ioFailure) {
+        Console.WriteLine($"Got result in Steam.cs: {result.m_handle.m_UGCQueryHandle}");
         if (!_initialized)
-            return;
-        int indexOfQuery = _currentUGCQueries.IndexOf(result.m_handle.m_UGCQueryHandle);
-        if (indexOfQuery == -1)
             return;
         for (uint i = 0; i < result.m_unNumResultsReturned; i++) {
             SteamUGCDetails_t details;
@@ -542,7 +545,6 @@ public class Steam : IDisposable {
             }
         }
         SteamUGC.ReleaseQueryUGCRequest(result.m_handle);
-        _currentUGCQueries.RemoveAt(indexOfQuery);
     }
 
     // This is exactly what is going on in the original Steam.dll.

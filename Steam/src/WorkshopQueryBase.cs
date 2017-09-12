@@ -9,7 +9,7 @@ public abstract class WorkshopQueryBase : IDisposable {
 
     internal readonly static bool _hasSetReturnOnlyIDs = typeof(SteamUGC).GetMethod("SetReturnOnlyIDs") != null;
 
-    internal Callback<SteamUGCQueryCompleted_t> _completedCallback;
+    internal CallResult<SteamUGCQueryCompleted_t> _completedCallResult;
 
     public event WorkshopQueryFinished QueryFinished;
     public event WorkshopQueryResultFetched ResultFetched;
@@ -36,7 +36,7 @@ public abstract class WorkshopQueryBase : IDisposable {
         numResultsFetched = 0;
         fetchedData = WorkshopQueryData.Details;
         maxCachedTime = 0;
-        _completedCallback = Callback<SteamUGCQueryCompleted_t>.Create(OnSteamUGCQueryCompleted);
+        _completedCallResult = CallResult<SteamUGCQueryCompleted_t>.Create(OnSteamUGCQueryCompleted);
         page = 1;
         _handle = new UGCQueryHandle_t();
     }
@@ -93,13 +93,15 @@ public abstract class WorkshopQueryBase : IDisposable {
         SetQueryData();
         SteamAPICall_t call = SteamUGC.SendQueryUGCRequest(_handle);
         if (call.m_SteamAPICall == 0)
-            OnSteamUGCQueryCompleted(new SteamUGCQueryCompleted_t());
+            OnSteamUGCQueryCompleted(new SteamUGCQueryCompleted_t(), false);
+        else
+            _completedCallResult.Set(call);
     }
 
-    private unsafe void OnSteamUGCQueryCompleted(SteamUGCQueryCompleted_t queryCompleted) {
+    private unsafe void OnSteamUGCQueryCompleted(SteamUGCQueryCompleted_t queryCompleted, bool ioFailure) {
         UGCQueryHandle_t handle = queryCompleted.m_handle;
-        if (handle.m_UGCQueryHandle != _handle.m_UGCQueryHandle)
-            return;
+        if (_handle.m_UGCQueryHandle == 0 || ioFailure)
+            goto Finish;
 
         numResultsTotal = queryCompleted.m_unTotalMatchingResults;
         uint results = queryCompleted.m_unNumResultsReturned;
@@ -197,22 +199,16 @@ public abstract class WorkshopQueryBase : IDisposable {
     protected virtual void Dispose(bool flag) {
         Destroy();
 
-        try {
-            _completedCallback?.Unregister();
-        } catch (InvalidOperationException) {
-            // This only happens when using the stubbed Steamworks.NET...
+        if (_completedCallResult != null) {
+            _completedCallResult.Cancel();
+            if (_completedCallResult is IDisposable)
+                Dispose__completedCallResult_Dispose();
         }
-        if (_completedCallback is IDisposable)
-            try {
-                Dispose__completedCallback_Dispose();
-            } catch (MissingMethodException) {
-                // We're definitely using the stubbed Steamworks.NET now... unless someone dropped in an outdated version? But why?
-            }
-        _completedCallback = null;
+        _completedCallResult = null;
     }
 
-    internal unsafe void Dispose__completedCallback_Dispose() {
-        _completedCallback?.Dispose();
+    internal unsafe void Dispose__completedCallResult_Dispose() {
+        _completedCallResult?.Dispose();
     }
 
     public void Dispose() {

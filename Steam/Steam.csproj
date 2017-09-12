@@ -23,8 +23,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Steamworks.NET, Version=10.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Steamworks.NET">
       <HintPath>..\Steamworks.NET\Steamworks.NET.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
