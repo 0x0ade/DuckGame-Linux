@@ -41,9 +41,6 @@
     <Reference Include="FNA">
       <HintPath>..\libs\FNA.dll</HintPath>
     </Reference>
-    <Reference Include="Steam">
-      <HintPath>..\libs\Steam.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="XnaToFna">
       <HintPath>..\libs\XnaToFna.exe</HintPath>

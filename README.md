@@ -17,7 +17,7 @@
 
 ### Current collection of patches:
 * [XnaToFna](https://github.com/0x0ade/XnaToFna) gets the game running using FNA instead of XNA. Simple enough!
-* [Non-mixed-mode Steam.dll "proxy" to Steamworks.NET](https://github.com/0x0ade/DuckGame-Steamworks.NET) - this theoretically allows you to use Steam functionality natively... but the provided Steamworks.NET acts as "no DRM."
+* [Non-mixed-mode Steam.dll "proxy" to Steamworks.NET](https://github.com/0x0ade/DuckGame-Linux/tree/master/Steam) - this theoretically allows you to use Steam functionality natively... but the provided Steamworks.NET acts as "no DRM."
 * More verbose error messages that help you when patching the game.
 * Create missing directories automatically. Does Windows just implicitly create the directories?!
 * Automatically pass -nothreading because it's faster.
