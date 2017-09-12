@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Steamworks;
+using System.Runtime.CompilerServices;
 
 public delegate void WorkshopQueryFinished(object sender);
 public delegate void WorkshopQueryResultFetched(object sender, WorkshopQueryResult result);
@@ -199,16 +200,9 @@ public abstract class WorkshopQueryBase : IDisposable {
     protected virtual void Dispose(bool flag) {
         Destroy();
 
-        if (_completedCallResult != null) {
-            _completedCallResult.Cancel();
-            if (_completedCallResult is IDisposable)
-                Dispose__completedCallResult_Dispose();
-        }
+        _completedCallResult?.Cancel();
+        (_completedCallResult as IDisposable)?.Dispose();
         _completedCallResult = null;
-    }
-
-    internal unsafe void Dispose__completedCallResult_Dispose() {
-        _completedCallResult?.Dispose();
     }
 
     public void Dispose() {
