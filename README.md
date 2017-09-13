@@ -3,7 +3,13 @@
 ##### MIT-licensed
 ----
 
-[**Feel free to discuss this on Reddit!**](https://www.reddit.com/r/linux_gaming/comments/6zqrrx/duckgamelinux_fna_custom_steamworks_bindings_some/)
+[**Feel free to discuss this on Reddit!**](https://www.reddit.com/r/linux_gaming/comments/6zqrrx/duckgamelinux_fna_custom_steamworks_bindings_some/)  
+[Screenshots](https://twitter.com/0x0ade/status/907745108010946560), [GamingOnLinux.com article](https://www.gamingonlinux.com/articles/want-to-play-duck-game-on-linux-well-its-possible-thanks-to-xnatofna.10339)
+
+[**You can support me on Patreon!**](https://www.patreon.com/0x0ade)  
+This project wouldn't be possible without the support from:
+* Ethan Lee: Thank you for creating FNA!
+* An anonymous Patreon and Renaud Bedard: I wouldn't be able to get my hands on the game without your support!
 
 ### Usage instructions:
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
