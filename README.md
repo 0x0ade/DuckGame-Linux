@@ -3,6 +3,8 @@
 ##### MIT-licensed
 ----
 
+[Feel free to discuss this on Reddit!**](https://www.reddit.com/r/linux_gaming/comments/6zqrrx/duckgamelinux_fna_custom_steamworks_bindings_some/)
+
 ### Usage instructions:
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
 * Install `mono-complete` and `libcurl3:i386` (or matching) via your package manager.
