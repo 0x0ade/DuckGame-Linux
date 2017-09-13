@@ -21,8 +21,8 @@ This project wouldn't be possible without the support from:
 * Put the contents of `USEME` next to the rest of Duck Game. `XnaToFna.exe` and `DuckGame.exe` should be next to each other.
 * Open terminal in Duck Game directory, run `chmod a+x ./mod.sh; ./mod.sh`
 * Advanced users: Remove `Content` from `orig` (or don't copy in the first place) and _after_ the first patch, uncomment `--skip-xwb --skip-xgs` in `mod.sh`.
-* Run `mono DuckGame.exe`
-* Advanced users: [Set up MonoKickstart properly](https://github.com/flibitijibibo/MonoKickstart), launch the game via Steam.
+* Run `mono DuckGame.exe` OR Launch the game via Steam (`DuckGame.sh`).
+* Advanced users: [Set up MonoKickstart properly.](https://github.com/flibitijibibo/MonoKickstart) (note: currently still requires full mono installation as it still depends on WinForms. Working on it!)
 * Be a duck with a gun!
 
 ### Current collection of patches:
