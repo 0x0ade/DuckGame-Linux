@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\patch_ModLoader.cs" />
     <Compile Include="src\patch_DuckFile.cs" />
     <Compile Include="src\patch_Program.cs" />
   </ItemGroup>

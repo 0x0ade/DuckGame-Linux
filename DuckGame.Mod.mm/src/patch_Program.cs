@@ -94,7 +94,7 @@ namespace DuckGame {
                     // InitializeMods calls ModLoader.LoadMods.
                     // LoadMods sets ModLoader.modHash.
                     // -nomods thus leaves ModLoader.modHash == null, which causes issues.
-                    _ModLoader_set_modHash("nomods"); // ModLoader.modHash = "nomods"
+                    patch_ModLoader.DefaultModHash();
             }
 
             orig_Main(args);

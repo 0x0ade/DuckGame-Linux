@@ -64,7 +64,7 @@ public class Steam : IDisposable {
     public unsafe static bool Authorize() {
         if (!_initialized)
             return false;
-        // FIXME: SteamApps.RequestAppProofOfPurchaseKey? SteamApps.BIsAppInstalled? SteamApps.BIsSubscribedApp?
+        // TODO: SteamApps.RequestAppProofOfPurchaseKey? SteamApps.BIsAppInstalled? SteamApps.BIsSubscribedApp?
         return SteamApps.BIsSubscribedApp(SteamUtils.GetAppID());
     }
 
@@ -80,7 +80,7 @@ public class Steam : IDisposable {
         Callback<DownloadItemResult_t>.Create(OnDownloadItemResult);
         Callback<UserStatsReceived_t>.Create(OnRequestStats);
 
-        // Manually added CallResults which otherwise would be added, then removed behind the scenes:
+        // Maintain CallResults which otherwise would be added, then removed behind the scenes:
         SetCallResult<GlobalStatsReceived_t>(OnRequestGlobalStats);
         SetCallResult<CreateItemResult_t>(OnCreateItem);
         SetCallResult<SubmitItemUpdateResult_t>(OnSubmitItemUpdate);
@@ -97,7 +97,7 @@ public class Steam : IDisposable {
 
         if (_initialized) {
             user = User.GetUser(SteamUser.GetSteamID());
-            // FIXME: The original Steam.dll would call something now, but I can't identify what.
+            // TODO: The original Steam.dll would call something now, but I can't identify what.
         } else {
             // THIS IS A HORRIBLE HACK TO GET DUCK GAME TO SHUT UP WHEN "OFFLINE".
             _offline = true;
@@ -166,7 +166,7 @@ public class Steam : IDisposable {
         if (!_initialized)
             return;
         waitingForGlobalStats = true;
-        SetCallResult<GlobalStatsReceived_t>(SteamUserStats.RequestGlobalStats(1)); // FIXME: How many days for RequestGlobalStats?
+        SetCallResult<GlobalStatsReceived_t>(SteamUserStats.RequestGlobalStats(1)); // TODO: How many days for RequestGlobalStats?
     }
 
     public unsafe static double GetGlobalStat(string id) {
@@ -348,9 +348,10 @@ public class Steam : IDisposable {
         lobbySearchComplete = false;
         lobbiesFound = 0;
         if (who != null) {
-            // FIXME: What does the original Steam.dll do? Filter by user?
+            // TODO: What does the original Steam.dll do? Filter by user?
+            // This isn't critical, but only used when Duck Game's Program.testServer == true and superjoebob is your steam friend.
         }
-        SteamMatchmaking.RequestLobbyList();
+        SetCallResult<LobbyMatchList_t>(SteamMatchmaking.RequestLobbyList());
     }
 
     public unsafe static void SearchForLobbyWorldwide() {
@@ -492,7 +493,7 @@ public class Steam : IDisposable {
     private unsafe static void OnJoinLobby(LobbyEnter_t result, bool ioFailure) {
         if (!_initialized)
             return;
-        lobby?.OnProcessingComplete(result.m_ulSteamIDLobby, (SteamLobbyJoinResult) result.m_rgfChatPermissions);
+        lobby?.OnProcessingComplete(result.m_ulSteamIDLobby, (SteamLobbyJoinResult) result.m_EChatRoomEnterResponse);
     }
 
     private unsafe static void OnSearchForLobby(LobbyMatchList_t result, bool ioFailure) {
@@ -528,7 +529,6 @@ public class Steam : IDisposable {
     }
 
     private unsafe static void OnSendQueryUGCRequest(SteamUGCQueryCompleted_t result, bool ioFailure) {
-        Console.WriteLine($"Got result in Steam.cs: {result.m_handle.m_UGCQueryHandle}");
         if (!_initialized)
             return;
         for (uint i = 0; i < result.m_unNumResultsReturned; i++) {
@@ -547,16 +547,14 @@ public class Steam : IDisposable {
         SteamUGC.ReleaseQueryUGCRequest(result.m_handle);
     }
 
-    // This is exactly what is going on in the original Steam.dll.
-    // FIXME: Replace hardcoded offsets in OnLobbyMemberStatus.
     private unsafe static void OnLobbyMemberStatus(LobbyChatUpdate_t result) {
         if (lobby == null)
             return;
-        User user = User.GetUser((ulong) (*(long*) (&result + 8 / sizeof(LobbyChatUpdate_t))));
-        ulong num = (ulong) (*(long*) (&result + 16 / sizeof(LobbyChatUpdate_t)));
-        if (*(long*) (&result + 8 / sizeof(LobbyChatUpdate_t)) != (long) num)
-            user = User.GetUser(num);
-        lobby.OnUserStatusChange(user, (SteamLobbyUserStatusFlags) (*(int*) (&result + 24 / sizeof(LobbyChatUpdate_t))), user);
+        lobby.OnUserStatusChange(
+            User.GetUser(result.m_ulSteamIDUserChanged),
+            (SteamLobbyUserStatusFlags) result.m_rgfChatMemberStateChange,
+            User.GetUser(result.m_ulSteamIDMakingChange)
+        );
     }
 
     private unsafe static void OnConnectionRequest(P2PSessionRequest_t result) {
