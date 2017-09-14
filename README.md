@@ -9,20 +9,21 @@
 [**You can support me on Patreon!**](https://www.patreon.com/0x0ade)  
 This project wouldn't be possible without the support from:
 * Ethan Lee: Thank you for creating FNA!
-* An anonymous Patreon and Renaud Bedard: I wouldn't be able to get my hands on the game without your support!
+* Artus Elias Meyer-Toms, Renaud Bedard and Ryan Kistner: I wouldn't be able to get my hands on the game without your support!
 
 ### Usage instructions:
+**Preparations:**
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
+* Create a copy of the Duck Game directory... in the Duck Game directory and call it `orig`. XnaToFna will use that as a "backup" directory.
 * Install `mono-complete` and `libcurl3:i386` and `ffmpeg` (or matching) via your package manager.
     * Note: `ffmpeg`, not "`libav`" / `avconv`.
 * Copy or symlink the i386 `libcurl.so.3` into `DuckGameDir/libcurl.so` because the Steam Runtime is somehow missing this...
+
+**Installing / updating:**
 * Download [**the latest released DuckGame-Linux-Complete.zip**](https://github.com/0x0ade/DuckGame-Linux/releases)
-* Create a copy of the Duck Game directory... in the Duck Game directory and call it `orig`. XnaToFna will use that as a "backup" directory.
 * Put the contents of the .zip next to the rest of Duck Game. `XnaToFna.exe` and `DuckGame.exe` should be next to each other.
 * Open terminal in Duck Game directory, run `chmod a+x ./mod.sh; ./mod.sh`
-* Advanced users: Remove `Content` from `orig` (or don't copy in the first place) and _after_ the first patch, uncomment `--skip-xwb --skip-xgs` in `mod.sh`.
 * Run `mono DuckGame.exe` OR Launch the game via Steam (add `DuckGame.sh` to your library as "non-Steam game").
-* Advanced users: [Set up MonoKickstart properly.](https://github.com/flibitijibibo/MonoKickstart) (note: currently still requires full mono installation as it still depends on WinForms. Working on it!)
 * Be a duck with a gun!
 
 ### Current collection of patches:
@@ -32,5 +33,6 @@ This project wouldn't be possible without the support from:
 * Create missing directories automatically. Does Windows just implicitly create the directories?!
 * Automatically pass -nothreading because it's faster.
 * Automatically pass -nomods because the mods would need to be relinked to FNA. This doesn't happen automagically yet.
+* Fix `ModLoader.modHash == null`, not `"nomods"` when `-nomods` is passed. This also affects vanilla Duck Game and can kill Steam.
 
 If for whatever reason something doesn't work, please create an issue on GitHub. I want this to work for everyone!
