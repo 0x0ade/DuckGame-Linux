@@ -17,16 +17,19 @@ This project wouldn't be possible without the support from:
 **Preparations:**
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
 * Install `mono-complete` and `libcurl3:i386` and `ffmpeg` (or matching) via your package manager.
-    * Note: `ffmpeg`, not "`libav`" / `avconv`.
+    * `ffmpeg`, not "`libav`" / `avconv`.
 * Copy or symlink the i386 `libcurl.so.3` into `DuckGameDir/libcurl.so` because the Steam Runtime is somehow missing this...
+    * This is technically only required for online multiplayer to work... but it's hit-and-miss anyway.
 
 **Installing / updating:**
 * Download [**the latest released DuckGame-Linux-Complete.zip**](https://github.com/0x0ade/DuckGame-Linux/releases)
 * Extract the .zip into the Duck Game directory. Overwrite the original files when extracting. `XnaToFna.exe`, and `DuckGame.exe` should be next to each other; The old `Steam.dll` should be replaced by the one in the .zip.
 * Open terminal in Duck Game directory, run `chmod a+x ./mod.sh; ./mod.sh`
-    * Note: `mod.sh` creates a backup of important files in an `orig` subdirectory, which XnaToFna needs. It also gives all files in the directory read-write permissions for all users, otherwise both XnaToFna and MonoMod will fail.
+    * `mod.sh` creates a backup of important files in an `orig` subdirectory, which XnaToFna needs. It also gives all files in the directory read-write permissions for all users, otherwise both XnaToFna and MonoMod will fail.
 * Run `mono DuckGame.exe` OR Launch the game via Steam (add `DuckGame.sh` to your library as "non-Steam game").
 * Be a duck with a gun!
+
+The game stores its save data in `~/DuckGame`, which is technically the same as on Windows.
 
 ### Current collection of patches:
 * [XnaToFna](https://github.com/0x0ade/XnaToFna) gets the game running using [FNA](https://fna-xna.github.io/) instead of XNA. Thanks to [flibitijibibo](https://www.patreon.com/flibitijibibo) for FNA. Without him this wouldn't be possible!
