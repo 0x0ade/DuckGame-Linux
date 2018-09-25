@@ -18,6 +18,7 @@ This project wouldn't be possible without the support from:
 * Get yourself a fresh copy of Duck Game, f.e. via Steam... through Wine... or from a friend with Windows.
 * Install `mono-complete` and `libcurl3:i386` and `ffmpeg` (or matching) via your package manager.
     * `ffmpeg`, not "`libav`" / `avconv`.
+* If running Solus, install `libgdiplus` via eopkg.
 
 **Installing / updating:**
 * Download [**the latest released DuckGame-Linux-Complete.zip**](https://github.com/0x0ade/DuckGame-Linux/releases)
