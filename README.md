@@ -24,7 +24,10 @@ This project wouldn't be possible without the support from:
 * Extract the .zip into the Duck Game directory. Overwrite the original files when extracting. `XnaToFna.exe`, and `DuckGame.exe` should be next to each other; The old `Steam.dll` should be replaced by the one in the .zip.
 * Open terminal in Duck Game directory, run `chmod a+x ./mod.sh; ./mod.sh`
     * `mod.sh` creates a backup of important files in an `orig` subdirectory, which XnaToFna needs. It also gives all files in the directory read-write permissions for all users, otherwise both XnaToFna and MonoMod will fail.
-* Run `mono DuckGame.exe` OR Launch the game via Steam (add `DuckGame.sh` to your library as "non-Steam game").
+* Run the game in one of the following ways:
+    * `mono DuckGame.exe`
+    * Set launch options for Duck Game in Steam to `set -- %command%; shift 2; "${1%.exe}.sh" "${@:2}"`. Note that even though this will not use Wine, Steam will still install Proton (if you don't already have it) and create about 60MB of additional Windows files.
+    * Add `DuckGame.sh` to your Steam library as an alternative "Non-Steam Game".
 * Be a duck with a gun!
 
 The game stores its save data in `~/DuckGame`, which is technically the same as on Windows.
